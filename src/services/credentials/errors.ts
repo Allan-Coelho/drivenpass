@@ -13,3 +13,10 @@ export function unauthorized_user_error(): ApplicationError {
     message: "The user does not have authorization",
   };
 }
+
+export function credential_not_found_error(): ApplicationError {
+  return {
+    name: "Credential_not_found_error",
+    message: "The user does not have authorization",
+  };
+}

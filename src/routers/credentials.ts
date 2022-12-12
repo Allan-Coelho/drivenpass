@@ -1,4 +1,9 @@
-import { sign_in, sign_up } from "@/controllers";
+import {
+  create_credentials,
+  delete_credential_by_id,
+  get_credentials,
+  get_credential_by_id,
+} from "@/controllers";
 import { authentication, validateBody, validateParams } from "@/middlewares";
 import { idSchema } from "@/schemas/appSchemas";
 import { credentialsSchema } from "@/schemas/credentials";
@@ -8,9 +13,9 @@ const credentials = Router();
 
 credentials
   .all("/*", authentication)
-  .post("/", validateBody(credentialsSchema))
-  .get("/", sign_up)
-  .get("/:id", validateParams(idSchema), sign_up)
-  .delete("/:id", validateParams(idSchema), sign_up);
+  .post("/", validateBody(credentialsSchema), create_credentials)
+  .get("/", get_credentials)
+  .get("/:id", validateParams(idSchema), get_credential_by_id)
+  .delete("/:id", validateParams(idSchema), delete_credential_by_id);
 
 export { credentials };

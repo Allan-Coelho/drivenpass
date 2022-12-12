@@ -13,7 +13,7 @@ function create(credential_body: CredentialsBody) {
   });
 }
 
-function findById(id: number) {
+function find_by_id(id: number) {
   return prisma.credential.findFirst({
     where: {
       id,
@@ -21,7 +21,7 @@ function findById(id: number) {
   });
 }
 
-function findMany(user_id: number) {
+function find_many(user_id: number) {
   return prisma.credential.findMany({
     where: {
       userId: user_id,
@@ -29,7 +29,7 @@ function findMany(user_id: number) {
   });
 }
 
-function deleteById(id: number) {
+function delete_by_id(id: number) {
   return prisma.credential.delete({
     where: {
       id,
@@ -37,7 +37,7 @@ function deleteById(id: number) {
   });
 }
 
-function findByTitle(user_id: number, title: string) {
+function find_by_title(user_id: number, title: string) {
   return prisma.credential.findFirst({
     where: {
       userId: user_id,
@@ -48,8 +48,8 @@ function findByTitle(user_id: number, title: string) {
 
 export const credentials = {
   create,
-  findById,
-  findMany,
-  findByTitle,
-  deleteById,
+  find_by_id,
+  find_many,
+  find_by_title,
+  delete_by_id,
 };

@@ -1,5 +1,5 @@
 import { AuthenticatedRequest } from "@/middlewares";
-import { ApplicationError, CredentialsBody } from "@/protocols";
+import { CredentialsBody } from "@/protocols";
 import * as services from "@/services";
 import { Response } from "express";
 import httpStatus from "http-status";
@@ -54,15 +54,42 @@ export async function get_credential_by_id(
   const { id } = request.params;
 
   try {
-    const credentials = await services.credentials.get_credential_by_id(
+    const credential = await services.credentials.get_credential_by_id(
       Number(id),
       user_id
     );
 
-    return response.status(httpStatus.CREATED).send(credentials);
+    return response.status(httpStatus.CREATED).send(credential);
   } catch (error) {
     if (error.name === "Unauthorized_user_error") {
       return response.status(httpStatus.UNAUTHORIZED).send(error);
+    }
+
+    if (error.name === "Credential_not_found_error") {
+      return response.status(httpStatus.NOT_FOUND).send(error);
+    }
+    return response.sendStatus(httpStatus.INTERNAL_SERVER_ERROR);
+  }
+}
+
+export async function delete_credential_by_id(
+  request: AuthenticatedRequest,
+  response: Response
+) {
+  const { user_id } = request;
+  const { id } = request.params;
+
+  try {
+    await services.credentials.delete_credential_by_id(Number(id), user_id);
+
+    return response.sendStatus(httpStatus.OK);
+  } catch (error) {
+    if (error.name === "Unauthorized_user_error") {
+      return response.status(httpStatus.UNAUTHORIZED).send(error);
+    }
+
+    if (error.name === "Credential_not_found_error") {
+      return response.status(httpStatus.NOT_FOUND).send(error);
     }
 
     return response.sendStatus(httpStatus.INTERNAL_SERVER_ERROR);
