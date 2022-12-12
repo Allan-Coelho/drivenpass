@@ -35,8 +35,7 @@ model Credential {
   url      String
   username String
   password String
-
-  userId Int
+  userId   Int
 
   @@map("credentials")
 }

@@ -10,7 +10,8 @@ app
   .use(cors())
   .use(express.json())
   .get("/health", (_req, res) => res.send("OK!"))
-  .use("/authentication", routers.authentication);
+  .use("/authentication", routers.authentication)
+  .use("/credentials", routers.credentials);
 
 export function initialize_server(): Promise<Express> {
   connectDb();

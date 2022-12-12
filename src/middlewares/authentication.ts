@@ -1,11 +1,10 @@
 import { NextFunction, Request, Response } from "express";
 import httpStatus from "http-status";
 import * as jwt from "jsonwebtoken";
-
 import { unauthorizedError } from "@/errors";
 import { prisma } from "@/configurations";
 
-export async function authenticateToken(
+export async function authentication(
   request: AuthenticatedRequest,
   response: Response,
   next: NextFunction
