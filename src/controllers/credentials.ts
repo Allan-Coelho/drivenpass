@@ -25,7 +25,7 @@ export async function create_credentials(
       .status(httpStatus.CREATED)
       .send(exclude(result, "password"));
   } catch (error) {
-    if (error.message === "DuplicatedTitleError") {
+    if (error.name === "DuplicatedTitleError") {
       return response.status(httpStatus.CONFLICT).send(error);
     }
   }
@@ -42,6 +42,29 @@ export async function get_credentials(
 
     return response.status(httpStatus.CREATED).send(credentials);
   } catch (error) {
+    return response.sendStatus(httpStatus.INTERNAL_SERVER_ERROR);
+  }
+}
+
+export async function get_credential_by_id(
+  request: AuthenticatedRequest,
+  response: Response
+) {
+  const { user_id } = request;
+  const { id } = request.params;
+
+  try {
+    const credentials = await services.credentials.get_credential_by_id(
+      Number(id),
+      user_id
+    );
+
+    return response.status(httpStatus.CREATED).send(credentials);
+  } catch (error) {
+    if (error.name === "Unauthorized_user_error") {
+      return response.status(httpStatus.UNAUTHORIZED).send(error);
+    }
+
     return response.sendStatus(httpStatus.INTERNAL_SERVER_ERROR);
   }
 }
