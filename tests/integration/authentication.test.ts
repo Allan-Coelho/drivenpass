@@ -3,15 +3,17 @@ import faker from "@faker-js/faker";
 import { prisma } from "@/configurations";
 import httpStatus from "http-status";
 import supertest from "supertest";
-import { createUser } from "../factories";
-import { cleanDb } from "../helpers";
+import { create_user } from "../factories";
+import { clean_database } from "../helpers";
 import { exclude } from "@/utilities/prisma";
 
 beforeAll(async () => {
   await initialize_server();
-  await cleanDb();
 });
 
+beforeEach(async () => {
+  await clean_database();
+});
 const server = supertest(app);
 
 describe("POST /authentication/sign-in", () => {
@@ -47,7 +49,7 @@ describe("POST /authentication/sign-in", () => {
 
     it("should respond with status 401 if there is a user for given email but password is not correct", async () => {
       const body = generateValidBody();
-      await createUser(body);
+      await create_user(body);
 
       const response = await server.post("/authentication/sign-in").send({
         ...body,
@@ -60,7 +62,7 @@ describe("POST /authentication/sign-in", () => {
     describe("when credentials are valid", () => {
       it("should respond with status 200", async () => {
         const body = generateValidBody();
-        await createUser(body);
+        await create_user(body);
 
         const response = await server
           .post("/authentication/sign-in")
@@ -71,7 +73,7 @@ describe("POST /authentication/sign-in", () => {
 
       it("should respond with user data", async () => {
         const body = generateValidBody();
-        const user = await createUser(body);
+        const user = await create_user(body);
 
         const response = await server
           .post("/authentication/sign-in")
@@ -85,7 +87,7 @@ describe("POST /authentication/sign-in", () => {
 
       it("should respond with session token", async () => {
         const body = generateValidBody();
-        await createUser(body);
+        await create_user(body);
 
         const response = await server
           .post("/authentication/sign-in")
@@ -122,7 +124,7 @@ describe("POST /authentication/sign-up", () => {
 
     it("should respond with status 409 if email already is in use", async () => {
       const body = generateValidBody();
-      await createUser(body);
+      await create_user(body);
       const response = await server.post("/authentication/sign-up").send(body);
 
       expect(response.status).toBe(httpStatus.CONFLICT);

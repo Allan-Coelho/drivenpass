@@ -10,3 +10,9 @@ export type CredentialsBody = {
   userId: number;
   password: string;
 };
+
+export type NetworksBody = {
+  password: string;
+  network: string;
+  title: string;
+};

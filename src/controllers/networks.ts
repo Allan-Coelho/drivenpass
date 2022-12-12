@@ -1,52 +1,52 @@
 import { AuthenticatedRequest } from "@/middlewares";
-import { CredentialsBody } from "@/protocols";
+import { NetworksBody } from "@/protocols";
 import * as services from "@/services";
 import { Response } from "express";
 import httpStatus from "http-status";
-import { exclude } from "@/utilities/prisma";
+import {
+  network_not_found_error,
+  unauthorized_user_error,
+} from "@/services/networks/errors";
 
-export async function create_credentials(
+export async function create_network(
   request: AuthenticatedRequest,
   response: Response
 ) {
-  const { title, url, password, username } = request.body as CredentialsBody;
+  const { title, password, network } = request.body as NetworksBody;
   const { user_id } = request;
 
   try {
-    const result = await services.credentials.create({
-      title,
-      url,
-      password,
-      username,
-      userId: user_id,
-    });
+    await services.networks.create(
+      {
+        title,
+        password,
+        network,
+      },
+      user_id
+    );
 
-    return response
-      .status(httpStatus.CREATED)
-      .send(exclude(result, "password"));
-  } catch (error) {
-    if (error.name === "DuplicatedTitleError") {
-      return response.status(httpStatus.CONFLICT).send(error);
-    }
-  }
-}
-
-export async function get_credentials(
-  request: AuthenticatedRequest,
-  response: Response
-) {
-  const { user_id } = request;
-
-  try {
-    const credentials = await services.credentials.get_credentials(user_id);
-
-    return response.status(httpStatus.OK).send(credentials);
+    return response.sendStatus(httpStatus.CREATED);
   } catch (error) {
     return response.sendStatus(httpStatus.INTERNAL_SERVER_ERROR);
   }
 }
 
-export async function get_credential_by_id(
+export async function get_networks(
+  request: AuthenticatedRequest,
+  response: Response
+) {
+  const { user_id } = request;
+
+  try {
+    const networks = await services.networks.get_networks(user_id);
+
+    return response.status(httpStatus.OK).send(networks);
+  } catch (error) {
+    return response.sendStatus(httpStatus.INTERNAL_SERVER_ERROR);
+  }
+}
+
+export async function get_network_by_id(
   request: AuthenticatedRequest,
   response: Response
 ) {
@@ -59,20 +59,20 @@ export async function get_credential_by_id(
       user_id
     );
 
-    return response.status(httpStatus.OK).send(credential);
+    return response.status(httpStatus.CREATED).send(credential);
   } catch (error) {
-    if (error.name === "Unauthorized_user_error") {
+    if (error.name === unauthorized_user_error.name) {
       return response.status(httpStatus.UNAUTHORIZED).send(error);
     }
 
-    if (error.name === "Credential_not_found_error") {
+    if (error.name === network_not_found_error.name) {
       return response.status(httpStatus.NOT_FOUND).send(error);
     }
     return response.sendStatus(httpStatus.INTERNAL_SERVER_ERROR);
   }
 }
 
-export async function delete_credential_by_id(
+export async function delete_network_by_id(
   request: AuthenticatedRequest,
   response: Response
 ) {
@@ -80,15 +80,15 @@ export async function delete_credential_by_id(
   const { id } = request.params;
 
   try {
-    await services.credentials.delete_credential_by_id(Number(id), user_id);
+    await services.networks.delete_network_by_id(Number(id), user_id);
 
     return response.sendStatus(httpStatus.OK);
   } catch (error) {
-    if (error.name === "Unauthorized_user_error") {
+    if (error.name === unauthorized_user_error.name) {
       return response.status(httpStatus.UNAUTHORIZED).send(error);
     }
 
-    if (error.name === "Credential_not_found_error") {
+    if (error.name === network_not_found_error.name) {
       return response.status(httpStatus.NOT_FOUND).send(error);
     }
 

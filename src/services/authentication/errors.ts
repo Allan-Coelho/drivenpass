@@ -1,13 +1,13 @@
 import { ApplicationError } from "@/protocols";
 
-export function invalidCredentialsError(): ApplicationError {
+export function invalid_credentials_error(): ApplicationError {
   return {
     name: "InvalidCredentialsError",
     message: "email or password are incorrect",
   };
 }
 
-export function duplicatedEmailError(): ApplicationError {
+export function duplicated_email_error(): ApplicationError {
   return {
     name: "DuplicatedEmailError",
     message: "There is already an user with given email",

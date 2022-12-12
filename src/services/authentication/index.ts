@@ -3,16 +3,16 @@ import { exclude } from "@/utilities/prisma";
 import { User } from "@prisma/client";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { invalidCredentialsError, duplicatedEmailError } from "./errors";
+import { invalid_credentials_error, duplicated_email_error } from "./errors";
 
 async function sign_in(params: SignInParams): Promise<SignInResult> {
   const { email, password } = params;
 
-  const user = await getUserOrFail(email);
+  const user = await get_user_or_fail(email);
 
-  await validatePasswordOrFail(password, user.password);
+  await validate_password_or_fail(password, user.password);
 
-  const token = await createSession(user.id);
+  const token = await create_session(user.id);
 
   return {
     user: exclude(user, "password"),
@@ -21,43 +21,46 @@ async function sign_in(params: SignInParams): Promise<SignInResult> {
 }
 
 async function sign_up({ email, password }: CreateUserParams) {
-  await validateUniqueEmailOrFail(email);
+  await validate_unique_email_or_fail(email);
   const user = await repositories.users.create({ email, password });
 
   return user;
 }
 
-async function getUserOrFail(email: string): Promise<GetUserOrFailResult> {
+async function get_user_or_fail(email: string): Promise<GetUserOrFailResult> {
   const user = await repositories.users.findByEmail(email, {
     id: true,
     email: true,
     password: true,
   });
-  if (!user) throw invalidCredentialsError();
+  if (!user) throw invalid_credentials_error();
 
   return user;
 }
 
-async function validateUniqueEmailOrFail(email: string) {
-  const userWithSameEmail = await repositories.users.findByEmail(email);
-  if (userWithSameEmail) {
-    throw duplicatedEmailError();
+async function validate_unique_email_or_fail(email: string) {
+  const user_with_same_email = await repositories.users.findByEmail(email);
+  if (user_with_same_email !== null) {
+    throw duplicated_email_error();
   }
 }
 
-async function createSession(userId: number) {
-  const token = jwt.sign({ userId }, process.env.JWT_SECRET);
+async function create_session(user_id: number) {
+  const token = jwt.sign({ user_id }, process.env.JWT_SECRET);
   await repositories.sessions.create({
     token,
-    userId,
+    userId: user_id,
   });
 
   return token;
 }
 
-async function validatePasswordOrFail(password: string, userPassword: string) {
+async function validate_password_or_fail(
+  password: string,
+  userPassword: string
+) {
   const isPasswordValid = await bcrypt.compare(password, userPassword);
-  if (!isPasswordValid) throw invalidCredentialsError();
+  if (!isPasswordValid) throw invalid_credentials_error();
 }
 
 export type SignInParams = Pick<User, "email" | "password">;

@@ -11,7 +11,8 @@ app
   .use(express.json())
   .get("/health", (_req, res) => res.send("OK!"))
   .use("/authentication", routers.authentication)
-  .use("/credentials", routers.credentials);
+  .use("/credentials", routers.credentials)
+  .use("/networks", routers.networks);
 
 export function initialize_server(): Promise<Express> {
   connectDb();
