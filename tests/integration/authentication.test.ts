@@ -1,4 +1,4 @@
-import app, { initialize_server } from "@/server";
+import app, { initialize_server } from "@/app";
 import faker from "@faker-js/faker";
 import { prisma } from "@/configurations";
 import httpStatus from "http-status";
