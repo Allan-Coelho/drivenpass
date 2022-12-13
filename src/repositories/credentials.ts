@@ -32,7 +32,7 @@ function find_many(user_id: number) {
 function delete_by_id(id: number) {
   return prisma.credential.delete({
     where: {
-      id,
+      id: id,
     },
   });
 }

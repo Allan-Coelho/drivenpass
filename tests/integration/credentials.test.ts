@@ -137,7 +137,6 @@ describe(`GET ${route}`, () => {
       const credential = await create_credential(user_without_session.id);
       const response = await server
         .get(route)
-        .send(exclude(credential, "id", "userId"))
         .set("Authorization", `Bearer ${token}`);
 
       credential.password = cryptr.decrypt(credential.password);
@@ -187,7 +186,6 @@ describe(`GET ${route}/:id`, () => {
       const credential = await create_credential(user_without_session.id);
       const response = await server
         .get(`${route}/${credential.id}`)
-        .send(exclude(credential, "id", "userId"))
         .set("Authorization", `Bearer ${token}`);
 
       credential.password = cryptr.decrypt(credential.password);
@@ -222,6 +220,89 @@ describe(`GET ${route}/:id`, () => {
       const token = await generate_valid_token(user_without_session);
       const response = await server
         .get(`${route}/${faker.random.word()}`)
+        .set("Authorization", `Bearer ${token}`);
+
+      expect(response.status).toBe(httpStatus.BAD_REQUEST);
+    });
+  });
+});
+
+describe(`DELETE ${route}/:id`, () => {
+  it("should respond with status 401 if no token is given", async () => {
+    const response = await server.get(`${route}/:id`);
+
+    expect(response.status).toBe(httpStatus.UNAUTHORIZED);
+  });
+
+  it("should respond with status 401 if given token is not valid", async () => {
+    const token = faker.lorem.word();
+
+    const response = await server
+      .get(`${route}/:id`)
+      .set("Authorization", `Bearer ${token}`);
+
+    expect(response.status).toBe(httpStatus.UNAUTHORIZED);
+  });
+
+  it("should respond with status 401 if there is no session for given token", async () => {
+    const user_without_session = await create_user();
+    const token = jwt.sign(
+      { user_id: user_without_session.id },
+      process.env.JWT_SECRET
+    );
+
+    const response = await server
+      .get(`${route}/:id`)
+      .set("Authorization", `Bearer ${token}`);
+
+    expect(response.status).toBe(httpStatus.UNAUTHORIZED);
+  });
+
+  describe("when token is valid", () => {
+    it("should respond with status 200 and delete the credential if the id is valid", async () => {
+      const user_without_session = await create_user();
+      const token = await generate_valid_token(user_without_session);
+      const credential = await create_credential(user_without_session.id);
+      const response = await server
+        .delete(`${route}/${credential.id}`)
+        .set("Authorization", `Bearer ${token}`);
+      const credential_at_database = await prisma.credential.findFirst({
+        where: {
+          id: credential.id,
+        },
+      });
+
+      expect(response.status).toBe(httpStatus.OK);
+      expect(credential_at_database).toEqual(null);
+    });
+
+    it("should respond with status 404 if the credential does not exists", async () => {
+      const user_without_session = await create_user();
+      const token = await generate_valid_token(user_without_session);
+      const response = await server
+        .delete(`${route}/0`)
+        .set("Authorization", `Bearer ${token}`);
+
+      expect(response.status).toBe(httpStatus.NOT_FOUND);
+    });
+
+    it("should respond with status 401 if isn't of the user", async () => {
+      const user_without_session = await create_user();
+      const user = await create_user();
+      const token = await generate_valid_token(user_without_session);
+      const credential = await create_credential(user.id);
+      const response = await server
+        .delete(`${route}/${credential.id}`)
+        .set("Authorization", `Bearer ${token}`);
+
+      expect(response.status).toBe(httpStatus.UNAUTHORIZED);
+    });
+
+    it("should respond with status 400 if the id is invalid", async () => {
+      const user_without_session = await create_user();
+      const token = await generate_valid_token(user_without_session);
+      const response = await server
+        .delete(`${route}/${faker.random.word()}`)
         .set("Authorization", `Bearer ${token}`);
 
       expect(response.status).toBe(httpStatus.BAD_REQUEST);

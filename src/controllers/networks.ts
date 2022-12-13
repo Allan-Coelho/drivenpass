@@ -3,10 +3,7 @@ import { NetworksBody } from "@/protocols";
 import * as services from "@/services";
 import { Response } from "express";
 import httpStatus from "http-status";
-import {
-  network_not_found_error,
-  unauthorized_user_error,
-} from "@/services/networks/errors";
+import { exclude } from "@/utilities/prisma";
 
 export async function create_network(
   request: AuthenticatedRequest,
@@ -16,7 +13,7 @@ export async function create_network(
   const { user_id } = request;
 
   try {
-    await services.networks.create(
+    const created_network = await services.networks.create(
       {
         title,
         password,
@@ -25,7 +22,9 @@ export async function create_network(
       user_id
     );
 
-    return response.sendStatus(httpStatus.CREATED);
+    return response
+      .status(httpStatus.CREATED)
+      .send(exclude(created_network, "password"));
   } catch (error) {
     return response.sendStatus(httpStatus.INTERNAL_SERVER_ERROR);
   }
@@ -54,18 +53,18 @@ export async function get_network_by_id(
   const { id } = request.params;
 
   try {
-    const credential = await services.credentials.get_credential_by_id(
+    const network = await services.networks.get_network_by_id(
       Number(id),
       user_id
     );
 
-    return response.status(httpStatus.CREATED).send(credential);
+    return response.status(httpStatus.OK).send(network);
   } catch (error) {
-    if (error.name === unauthorized_user_error.name) {
+    if (error.name === "Unauthorized_user_error") {
       return response.status(httpStatus.UNAUTHORIZED).send(error);
     }
 
-    if (error.name === network_not_found_error.name) {
+    if (error.name === "Network_not_found_error") {
       return response.status(httpStatus.NOT_FOUND).send(error);
     }
     return response.sendStatus(httpStatus.INTERNAL_SERVER_ERROR);
@@ -84,11 +83,11 @@ export async function delete_network_by_id(
 
     return response.sendStatus(httpStatus.OK);
   } catch (error) {
-    if (error.name === unauthorized_user_error.name) {
+    if (error.name === "Unauthorized_user_error") {
       return response.status(httpStatus.UNAUTHORIZED).send(error);
     }
 
-    if (error.name === network_not_found_error.name) {
+    if (error.name === "Network_not_found_error") {
       return response.status(httpStatus.NOT_FOUND).send(error);
     }
 

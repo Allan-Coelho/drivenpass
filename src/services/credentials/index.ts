@@ -1,6 +1,5 @@
 import { CredentialsBody } from "@/protocols";
 import * as repositories from "@/repositories";
-import bcrypt from "bcrypt";
 import { Credential } from "@prisma/client";
 import {
   credential_not_found_error,
@@ -34,7 +33,7 @@ async function get_credential_by_id(id: number, user_id: number) {
 }
 
 async function delete_credential_by_id(id: number, user_id: number) {
-  const credential = await repositories.credentials.delete_by_id(id);
+  const credential = await repositories.credentials.find_by_id(id);
 
   if (credential === null) {
     throw credential_not_found_error();
@@ -44,7 +43,9 @@ async function delete_credential_by_id(id: number, user_id: number) {
     throw unauthorized_user_error();
   }
 
-  return credentials;
+  await repositories.credentials.delete_by_id(id);
+
+  return;
 }
 
 async function unique_title_or_fail(title: string, user_id: number) {

@@ -20,6 +20,7 @@ async function get_networks(user_id: number) {
 
 async function get_network_by_id(id: number, user_id: number) {
   const network = await repositories.networks.find_by_id(id);
+  if (network === null) throw network_not_found_error();
   if (network.userId !== user_id) throw unauthorized_user_error();
   const decryptedNetwork = decryptNetworks(network);
 
@@ -27,7 +28,7 @@ async function get_network_by_id(id: number, user_id: number) {
 }
 
 async function delete_network_by_id(id: number, user_id: number) {
-  const network = await repositories.networks.delete_by_id(id);
+  const network = await repositories.networks.find_by_id(id);
 
   if (network === null) {
     throw network_not_found_error();
@@ -37,7 +38,9 @@ async function delete_network_by_id(id: number, user_id: number) {
     throw unauthorized_user_error();
   }
 
-  return network;
+  await repositories.networks.delete_by_id(id);
+
+  return;
 }
 
 function decryptNetworks(networks: Network | Network[]) {
