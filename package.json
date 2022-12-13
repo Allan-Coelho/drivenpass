@@ -4,6 +4,7 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
+    "start": "node dist/server.js",
     "test": "NODE_ENV=test jest --passWithNoTests --runInBand --detectOpenHandles",
     "dev:load-envs": "dotenv -e .env.development",
     "dev": "NODE_ENV=development nodemon --watch 'src/' --exec 'ts-node -r tsconfig-paths/register ./src/server.ts' -e ts",
@@ -33,6 +34,7 @@
     "@faker-js/faker": "^6.3.1",
     "@types/bcrypt": "^5.0.0",
     "@types/cors": "^2.8.13",
+    "@types/cryptr": "^4.0.1",
     "@types/express": "^4.17.13",
     "@types/jest": "^26.0.23",
     "@types/jsonwebtoken": "^8.5.8",

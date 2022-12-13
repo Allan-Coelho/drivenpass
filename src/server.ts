@@ -1,6 +1,6 @@
 import express, { Express } from "express";
 import cors from "cors";
-import { load_env, connectDb } from "@/configurations";
+import { load_env, connect_database } from "@/configurations";
 import * as routers from "@/routers";
 
 load_env();
@@ -15,12 +15,12 @@ app
   .use("/networks", routers.networks);
 
 export function initialize_server(): Promise<Express> {
-  connectDb();
+  connect_database();
   return Promise.resolve(app);
 }
 
 initialize_server().then(() => {
-  const port = process.env.PORT;
+  const port = process.env.PORT || 4000;
   app.listen(port, () => {
     console.log(`Server is listening on port ${port}`);
   });
