@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "start": "node dist/server.js",
-    "test": "NODE_ENV=test jest --passWithNoTests --runInBand --detectOpenHandles",
+    "test": "NODE_ENV=test jest --passWithNoTests --runInBand --detectOpenHandles --forceExit",
     "dev:load-envs": "dotenv -e .env.development",
     "dev": "NODE_ENV=development nodemon --watch 'src/' --exec 'ts-node -r tsconfig-paths/register ./src/server.ts' -e ts",
     "test:load-envs": "dotenv -e .env.test",

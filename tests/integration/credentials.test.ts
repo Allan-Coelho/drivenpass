@@ -70,6 +70,32 @@ describe(`POST ${route}`, () => {
         exclude(credential_body, "password")
       );
     });
+
+    it("should respond with status 409 if already has an credential with the same title", async () => {
+      const user_without_session = await create_user();
+      const token = await generate_valid_token(user_without_session);
+      const credential = await create_credential(user_without_session.id);
+      const response = await server
+        .post(route)
+        .send(exclude(credential, "id", "userId"))
+        .set("Authorization", `Bearer ${token}`);
+
+      expect(response.status).toBe(httpStatus.CONFLICT);
+    });
+
+    it("should respond with status 400 if credential body is invalid", async () => {
+      const user_without_session = await create_user();
+      const token = await generate_valid_token(user_without_session);
+      const credential_body = create_credential_body();
+      credential_body.password = "";
+
+      const response = await server
+        .post(route)
+        .send(credential_body)
+        .set("Authorization", `Bearer ${token}`);
+
+      expect(response.status).toBe(httpStatus.BAD_REQUEST);
+    });
   });
 });
 
@@ -167,6 +193,38 @@ describe(`GET ${route}/:id`, () => {
       credential.password = cryptr.decrypt(credential.password);
       expect(response.status).toBe(httpStatus.OK);
       expect(response.body).toEqual(expect.objectContaining(credential));
+    });
+
+    it("should respond with status 404 if the credential does not exists", async () => {
+      const user_without_session = await create_user();
+      const token = await generate_valid_token(user_without_session);
+      const response = await server
+        .get(`${route}/${Number(faker.random.numeric())}`)
+        .set("Authorization", `Bearer ${token}`);
+
+      expect(response.status).toBe(httpStatus.NOT_FOUND);
+    });
+
+    it("should respond with status 401 if isn't of the user", async () => {
+      const user_without_session = await create_user();
+      const user = await create_user();
+      const token = await generate_valid_token(user_without_session);
+      const credential = await create_credential(user.id);
+      const response = await server
+        .get(`${route}/${credential.id}`)
+        .set("Authorization", `Bearer ${token}`);
+
+      expect(response.status).toBe(httpStatus.UNAUTHORIZED);
+    });
+
+    it("should respond with status 400 if the id is invalid", async () => {
+      const user_without_session = await create_user();
+      const token = await generate_valid_token(user_without_session);
+      const response = await server
+        .get(`${route}/${faker.random.word()}`)
+        .set("Authorization", `Bearer ${token}`);
+
+      expect(response.status).toBe(httpStatus.BAD_REQUEST);
     });
   });
 });

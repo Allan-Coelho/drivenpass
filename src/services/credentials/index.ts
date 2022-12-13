@@ -26,6 +26,7 @@ async function get_credentials(user_id: number) {
 
 async function get_credential_by_id(id: number, user_id: number) {
   const credential = await repositories.credentials.find_by_id(id);
+  if (credential === null) throw credential_not_found_error();
   if (credential.userId !== user_id) throw unauthorized_user_error();
   const decryptedCredential = decryptCredentials(credential);
 
